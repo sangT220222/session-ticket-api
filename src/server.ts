@@ -2,9 +2,11 @@ import express from "express";
 import cors from "cors";
 import session from "express-session";
 import dotenv from "dotenv";
+import { queryRouter } from "./routes/routes_logic.js";
 
 dotenv.config();
 const app = express();
+app.use(express.json());
 
 app.use(
   cors({
@@ -32,6 +34,8 @@ app.use(
     //protects against CSRF attacks,allow top level navigation - sameSite: 'lax'
   })
 );
+
+app.use("/api", queryRouter); //mounting the Router with the parameter
 
 app.get("/", (req, res) => {
   res.json({ message: "API running" });
