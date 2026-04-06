@@ -7,8 +7,17 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TicketPriority {
+  low
+  medium
+  high
+  urgent
+}
+
 model Ticket {
-  id        String   @id @default(cuid())
-  title     String
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  priority      TicketPriority?
+  createdAt     DateTime @default(now())
 }

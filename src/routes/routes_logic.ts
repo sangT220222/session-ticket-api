@@ -38,14 +38,14 @@ type TicketIdParams = {
 queryRouter.get("/tickets", validateQuery(querySchema), async (req, res) => {
   try {
     //validating and extracting params using Zod - also giving proper typ
-    const { title } = querySchema.parse(req.query);
+    const { title, description, priority } = querySchema.parse(req.query);
     const results = await prisma.ticket.findMany({
       where: {
         ...(title && { title }),
         // Conditionally include 'title' filter only if it exists in the query
         // e.g. if title = "test" -> { title: "test" }, otherwise omitted
-        // ...(description && { description }),
-        // ...(priority && { priority }),
+        ...(description && { description }),
+        ...(priority && { priority }),
       },
     });
     return res.status(200).json({
