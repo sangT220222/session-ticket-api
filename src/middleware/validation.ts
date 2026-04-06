@@ -57,3 +57,22 @@ export function validateParams<T>(schema: ZodType<T>) {
     next();
   };
 }
+
+export function validateQuery<T>(schema: ZodType<T>) {
+  return function (req: Request, res: Response, next: NextFunction) {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      const flattened = z.flattenError(result.error);
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid query parameters",
+        error: {
+          formErrors: flattened.formErrors,
+          fieldErrors: flattened.fieldErrors,
+        },
+      });
+    }
+    next();
+  };
+}

@@ -5,12 +5,15 @@ import {
   createTicketSchema,
   updateTicketSchema,
   ticketIdParam,
+  querySchema,
 } from "../schemas/ticket.schema.js";
 import {
   validateCreateTicket,
   validateUpdateTicket,
   validateParams,
+  validateQuery,
 } from "../middleware/validation.js";
+import { success } from "zod";
 export const queryRouter = Router();
 type TicketIdParams = {
   //setting type to let TS know
@@ -27,9 +30,32 @@ type TicketIdParams = {
 // }
 //Testing prisma connection - uncomment if needed
 
-queryRouter.get("/:id", (req, res) => {
-  //dynamic routing
-  res.send(`${req.params.id} printed`);
+// queryRouter.get("/:id", (req, res) => {
+//   //dynamic routing
+//   res.send(`${req.params.id} printed`);
+// });
+
+queryRouter.get("/tickets", validateQuery(querySchema), async (req, res) => {
+  try {
+    //validating and extracting params using Zod - also giving proper typ
+    const { title } = querySchema.parse(req.query);
+    const results = await prisma.ticket.findMany({
+      where: {
+        ...(title && { title }),
+        // Conditionally include 'title' filter only if it exists in the query
+        // e.g. if title = "test" -> { title: "test" }, otherwise omitted
+        // ...(description && { description }),
+        // ...(priority && { priority }),
+      },
+    });
+    return res.status(200).json({
+      success: true,
+      data: results,
+      message: "TEST",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 queryRouter.post(
@@ -40,7 +66,7 @@ queryRouter.post(
       await prisma.ticket.create({ data: req.body });
       return res.status(201).json({ success: true, message: "Ticket created" });
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       res
         .status(500)
         .json({ success: false, message: "Internal server error" });
