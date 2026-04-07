@@ -14,10 +14,17 @@ enum TicketPriority {
   urgent
 }
 
+enum TicketStatus {
+  todo
+  in_progress
+  completed
+}
+
 model Ticket {
   id            String   @id @default(cuid())
   title         String
   description   String?
   priority      TicketPriority?
+  status        TicketStatus?
   createdAt     DateTime @default(now())
 }

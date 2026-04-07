@@ -5,6 +5,7 @@ export const createTicketSchema = z.object({
   title: z.string().trim().min(3).max(100),
   description: z.string().trim().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]),
+  status: z.enum(["todo", "in_progress", "completed"]),
 });
 
 export const updateTicketSchema = createTicketSchema
@@ -22,5 +23,6 @@ export const querySchema = z
     title: z.string().trim().min(3).max(100).optional(),
     description: z.string().trim().optional(),
     priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+    status: z.enum(["todo", "in_progress", "completed"]).optional(),
   })
   .strict();

@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { Request, Response } from "express";
 import {
   createTicketSchema,
   updateTicketSchema,
@@ -13,12 +12,9 @@ import {
   validateParams,
   validateQuery,
 } from "../middleware/validation.js";
-import { success } from "zod";
+
+import { updateTicketController } from "../controllers/controller.js";
 export const queryRouter = Router();
-type TicketIdParams = {
-  //setting type to let TS know
-  id: string;
-};
 
 //Testing prisma connection - uncomment if needed
 // try {
@@ -78,27 +74,6 @@ queryRouter.patch(
   "/update/:id",
   validateParams(ticketIdParam),
   validateUpdateTicket(updateTicketSchema),
-  //Request<TicketIdParams> let TS know what content is in here
-  async (req: Request<TicketIdParams>, res: Response) => {
-    try {
-      //update
-      const ticketId = req.params.id;
-      await prisma.ticket.update({
-        where: { id: ticketId },
-        data: req.body,
-      });
-      return res.status(200).json({ message: "Ticket has been updated" });
-    } catch (error: any) {
-      if (error.code === "P2025") {
-        //PRISMA "record not found"
-        return res.status(404).json({
-          success: false,
-          message: "Ticket not found",
-        });
-      }
-      return res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    }
-  }
+  // Request<TicketIdParams> let TS know what content is in here
+  updateTicketController
 );
