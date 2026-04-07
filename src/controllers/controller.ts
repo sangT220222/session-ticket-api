@@ -14,7 +14,12 @@ export async function getTicketController(req: Request, res: Response) {
       success: true,
       data: result,
     });
-  } catch (error: any) {}
+  } catch (error: any) {
+    // console.log(error);
+    return res.status(500).json({
+      message: "Error",
+    });
+  }
 }
 
 export async function createTicketController(req: Request, res: Response) {

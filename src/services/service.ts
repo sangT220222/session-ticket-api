@@ -16,7 +16,20 @@ type CreateTicketInput = z.infer<typeof createTicketSchema>;
 type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
 
 export const getTicket = async (query: GetTicketInput) => {
-  const { title, description, priority, status, sort, order = "desc" } = query;
+  const {
+    title,
+    description,
+    priority,
+    status,
+    sort,
+    //default if no query param(s)
+    order = "desc",
+    page = 1,
+    limit = 10,
+  } = query;
+
+  const safeLimit = Math.min(limit, 50); // extra safety cap - in case user types limit=10000 for eg
+
   return prisma.ticket.findMany({
     where: {
       ...(title && { title: { contains: title, mode: "insensitive" } }),
@@ -26,7 +39,9 @@ export const getTicket = async (query: GetTicketInput) => {
       ...(priority && { priority }),
       ...(status && { status }),
     },
-    orderBy: sort ? { [sort]: order } : { createdAt: "desc" },
+    orderBy: sort ? { [sort]: order } : { createdAt: order },
+    skip: (page - 1) * safeLimit,
+    take: safeLimit,
   });
 };
 
