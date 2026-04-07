@@ -2,12 +2,31 @@
 
 import { prisma } from "../lib/prisma.js";
 import { isValidStatusTransition } from "./ticket.rules.js";
+type CreateTicketInput = {
+  title: string;
+  description: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "todo" | "in_progress" | "completed";
+};
 
 type UpdateTicketInput = {
   title?: string;
   description?: string;
   priority?: "low" | "medium" | "high" | "urgent";
   status?: "todo" | "in_progress" | "completed";
+};
+
+export const createTicket = async (newData: CreateTicketInput) => {
+  //check for duplicate title
+  const duplicate = await prisma.ticket.findFirst({
+    where: { title: newData.title },
+  });
+  if (duplicate) {
+    throw new Error("DUPLICATE TITLE");
+  }
+  const result = await prisma.ticket.create({ data: newData });
+
+  return result;
 };
 
 export const updateTicket = async (

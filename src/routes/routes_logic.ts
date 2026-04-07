@@ -13,7 +13,10 @@ import {
   validateQuery,
 } from "../middleware/validation.js";
 
-import { updateTicketController } from "../controllers/controller.js";
+import {
+  createTicketController,
+  updateTicketController,
+} from "../controllers/controller.js";
 export const queryRouter = Router();
 
 //Testing prisma connection - uncomment if needed
@@ -57,17 +60,7 @@ queryRouter.get("/tickets", validateQuery(querySchema), async (req, res) => {
 queryRouter.post(
   "/create",
   validateCreateTicket(createTicketSchema),
-  async (req, res) => {
-    try {
-      await prisma.ticket.create({ data: req.body });
-      return res.status(201).json({ success: true, message: "Ticket created" });
-    } catch (error) {
-      console.log(error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    }
-  }
+  createTicketController
 );
 
 queryRouter.patch(
