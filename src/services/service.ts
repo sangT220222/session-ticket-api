@@ -2,18 +2,32 @@
 
 import { prisma } from "../lib/prisma.js";
 import { isValidStatusTransition } from "./ticket.rules.js";
-type CreateTicketInput = {
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high" | "urgent";
-  status: "todo" | "in_progress" | "completed";
-};
+import {
+  createTicketSchema,
+  getTicketQuerySchema,
+  updateTicketSchema,
+} from "../schemas/ticket.schema.js";
+import * as z from "zod";
 
-type UpdateTicketInput = {
-  title?: string;
-  description?: string;
-  priority?: "low" | "medium" | "high" | "urgent";
-  status?: "todo" | "in_progress" | "completed";
+type GetTicketInput = z.infer<typeof getTicketQuerySchema>;
+
+type CreateTicketInput = z.infer<typeof createTicketSchema>;
+
+type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
+
+export const getTicket = async (query: GetTicketInput) => {
+  const { title, description, priority, status, sort, order = "desc" } = query;
+  return prisma.ticket.findMany({
+    where: {
+      ...(title && { title: { contains: title, mode: "insensitive" } }),
+      ...(description && {
+        description: { contains: description, mode: "insensitive" },
+      }),
+      ...(priority && { priority }),
+      ...(status && { status }),
+    },
+    orderBy: sort ? { [sort]: order } : { createdAt: "desc" },
+  });
 };
 
 export const createTicket = async (newData: CreateTicketInput) => {
@@ -22,11 +36,22 @@ export const createTicket = async (newData: CreateTicketInput) => {
     where: { title: newData.title },
   });
   if (duplicate) {
-    throw new Error("DUPLICATE TITLE");
+    throw new Error("DUPLICATE_TITLE");
   }
-  const result = await prisma.ticket.create({ data: newData });
 
-  return result;
+  const cleanedTitle = newData.title.trim();
+  if (!cleanedTitle) {
+    throw new Error("INVALID_TITLE");
+  }
+
+  return prisma.ticket.create({
+    data: {
+      ...newData,
+      title: cleanedTitle,
+      status: "todo",
+    },
+  });
+  //default status is todo when ticket being created
 };
 
 export const updateTicket = async (
@@ -38,14 +63,14 @@ export const updateTicket = async (
   });
 
   if (!existing) {
-    throw new Error("NOT FOUND");
+    throw new Error("NOT_FOUND");
   }
 
   if (data.status && existing.status) {
     const isValid = isValidStatusTransition(existing.status, data.status);
 
     if (!isValid) {
-      throw new Error("INVALID STATUS TRANSITION");
+      throw new Error("INVALID_STATUS_TRANSITION");
     }
   }
 
