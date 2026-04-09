@@ -3,6 +3,7 @@ import cors from "cors";
 import session from "express-session";
 import dotenv from "dotenv";
 import { queryRouter } from "./routes/routes_logic.js";
+import { authRouter } from "./routes/auth_routes.js";
 
 dotenv.config();
 const app = express();
@@ -36,6 +37,7 @@ app.use(
 );
 
 app.use("/api", queryRouter); //mounting the Router with the parameter
+app.use("/auth", authRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "API running" });
