@@ -42,7 +42,9 @@ export async function createTicketController(req: Request, res: Response) {
         message: "Title is empty",
       });
     }
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 }
 
