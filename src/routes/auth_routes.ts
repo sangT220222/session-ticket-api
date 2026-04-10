@@ -7,6 +7,8 @@ import { registerUserSchema, loginUserSchema } from "../schemas/authSchema.js";
 import {
   registerUserController,
   loginUserController,
+  logoutUserController,
+  meController,
 } from "../controllers/authController.js";
 
 export const authRouter = Router();
@@ -15,10 +17,14 @@ authRouter.post(
   "/register",
   validateRegisterBody(registerUserSchema),
   registerUserController
-); //have validation for req.body and then another service logic that checks if details are fine to create
+);
 
 authRouter.post(
   "/login",
   validateLoginBody(loginUserSchema),
   loginUserController
 );
+
+authRouter.get("/checkme", meController);
+
+authRouter.post("/logout", logoutUserController);

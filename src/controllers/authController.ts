@@ -36,10 +36,11 @@ export async function registerUserController(req: Request, res: Response) {
 
 export async function loginUserController(req: Request, res: Response) {
   try {
-    const result = await loginUser(req.body);
+    const userID = await loginUser(req.body);
+    req.session.userId = userID;
     return res.status(200).json({
       success: true,
-      message: "Login success",
+      message: "Login successful",
     });
   } catch (error: any) {
     if (error.message === "INVALID") {
@@ -53,4 +54,25 @@ export async function loginUserController(req: Request, res: Response) {
       .status(500)
       .json({ success: false, message: "Internal server error" });
   }
+}
+
+export function logoutUserController(req: Request, res: Response) {
+  req.session.destroy((error) => {
+    if (error) {
+      return res.status(500).json({ message: "Failed to log out" });
+    }
+    res.clearCookie("connect.sid");
+    res.status(200).json({ message: "Logged out" });
+  });
+}
+
+export function meController(req: Request, res: Response) {
+  if (!req.session.userId) {
+    return res.status(401).json({ authenticated: false });
+  }
+  return res.json({
+    authenticated: Boolean(req.session.id),
+    sessionID: req.session.id ?? null,
+    userID: req.session.userId ?? null,
+  });
 }

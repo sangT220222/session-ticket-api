@@ -50,4 +50,5 @@ export const loginUser = async (userData: LoginUserBody) => {
   if (!isPasswordValid) {
     throw new Error("INVALID");
   }
+  return user.id;
 };

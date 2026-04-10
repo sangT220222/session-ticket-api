@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import session from "express-session";
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 import { queryRouter } from "./routes/routes_logic.js";
 import { authRouter } from "./routes/auth_routes.js";
+import { sessionMiddleware } from "./authentication/session.js";
 
-dotenv.config();
+// dotenv.config();
 const app = express();
 app.use(express.json());
 
@@ -16,25 +16,7 @@ app.use(
   })
 );
 
-if (!process.env.SESSION_SECRET) {
-  //validate it so TS is happy when secret is declared later on
-  throw new Error("SESSION_SECRET is not set");
-}
-
-app.use(
-  session({
-    // genid: function(req){
-    //     return genuuid();
-    // }
-    secret: process.env.SESSION_SECRET,
-    resave: false, //no data saving in DB if no changes been made in requests -> Minimal DB hits
-    saveUninitialized: false, //no initial data saving if no data at the start
-    cookie: { secure: true, httpOnly: true, sameSite: "lax" },
-    //through HTTPS connection only - secure: true
-    //prevents JS from seeing cookie - httpOnly: true
-    //protects against CSRF attacks,allow top level navigation - sameSite: 'lax'
-  })
-);
+app.use(sessionMiddleware);
 
 app.use("/api", queryRouter); //mounting the Router with the parameter
 app.use("/auth", authRouter);
