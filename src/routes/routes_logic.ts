@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { prisma } from "../lib/prisma.js";
 import {
   createTicketSchema,
   updateTicketSchema,
@@ -18,6 +17,9 @@ import {
   getTicketController,
   updateTicketController,
 } from "../controllers/controller.js";
+
+import { requireAuth } from "../controllers/authController.js";
+
 export const queryRouter = Router();
 
 //Testing prisma connection - uncomment if needed
@@ -35,50 +37,23 @@ export const queryRouter = Router();
 //   res.send(`${req.params.id} printed`);
 // });
 
-// queryRouter.get(
-//   "/tickets",
-//   validateQuery(getTicketQuerySchema),
-//   async (req, res) => {
-//     try {
-//       //validating and extracting params using Zod - also giving proper typ
-//       const { title, description, priority } = getTicketQuerySchema.parse(
-//         req.query
-//       );
-//       const results = await prisma.ticket.findMany({
-//         where: {
-//           ...(title && { title }),
-//           // Conditionally include 'title' filter only if it exists in the query
-//           // e.g. if title = "test" -> { title: "test" }, otherwise omitted
-//           ...(description && { description }),
-//           ...(priority && { priority }),
-//         },
-//       });
-//       return res.status(200).json({
-//         success: true,
-//         data: results,
-//         message: "TEST",
-//       });
-//     } catch (error) {
-//       res
-//         .status(500)
-//         .json({ success: false, message: "Internal server error" });
-//     }
-//   }
-// );
 queryRouter.get(
   "/tickets",
+  requireAuth,
   validateQuery(getTicketQuerySchema),
   getTicketController
 );
 
 queryRouter.post(
   "/create",
+  requireAuth,
   validateCreateTicket(createTicketSchema),
   createTicketController
 );
 
 queryRouter.patch(
   "/update/:id",
+  requireAuth,
   validateParams(ticketIdParam),
   validateUpdateTicket(updateTicketSchema),
   updateTicketController
