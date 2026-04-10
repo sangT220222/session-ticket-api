@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { registerUser, loginUser } from "../services/authService.js";
+import { prisma } from "../lib/prisma.js";
 
 export async function registerUserController(req: Request, res: Response) {
   try {
@@ -76,3 +77,29 @@ export function meController(req: Request, res: Response) {
     userID: req.session.userId ?? null,
   });
 }
+
+//protecting routes - requiring only logged in users to execute selecive ones
+export const requireAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "Unauthorised acess" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.session.userId },
+  });
+
+  if (!user) {
+    return res.status(401).json({ message: "Unauthorised acess" });
+  }
+
+  req.user = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  };
+  next();
+};
