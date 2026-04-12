@@ -84,22 +84,26 @@ export const requireAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ message: "Unauthorised acess" });
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Unauthorised acess" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorised acess" });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
   }
-
-  const user = await prisma.user.findUnique({
-    where: { id: req.session.userId },
-  });
-
-  if (!user) {
-    return res.status(401).json({ message: "Unauthorised acess" });
-  }
-
-  req.user = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  };
-  next();
 };
