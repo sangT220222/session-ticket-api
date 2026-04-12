@@ -15,7 +15,7 @@ type CreateTicketInput = z.infer<typeof createTicketSchema>;
 
 type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
 
-export const getTicket = async (query: GetTicketInput) => {
+export const getTicket = async (query: GetTicketInput, userID: string) => {
   const {
     title,
     description,
@@ -38,6 +38,7 @@ export const getTicket = async (query: GetTicketInput) => {
       }),
       ...(priority && { priority }),
       ...(status && { status }),
+      createdByID: userID,
     },
     orderBy: sort ? { [sort]: order } : { createdAt: order },
     skip: (page - 1) * safeLimit,
@@ -45,7 +46,10 @@ export const getTicket = async (query: GetTicketInput) => {
   });
 };
 
-export const createTicket = async (newData: CreateTicketInput) => {
+export const createTicket = async (
+  newData: CreateTicketInput,
+  userID: string
+) => {
   //check for duplicate title
   const duplicate = await prisma.ticket.findFirst({
     where: { title: newData.title },
@@ -64,6 +68,7 @@ export const createTicket = async (newData: CreateTicketInput) => {
       ...newData,
       title: cleanedTitle,
       status: "todo",
+      createdByID: userID,
     },
   });
   //default status is todo when ticket being created
@@ -71,7 +76,8 @@ export const createTicket = async (newData: CreateTicketInput) => {
 
 export const updateTicket = async (
   ticketId: string,
-  data: UpdateTicketInput
+  data: UpdateTicketInput,
+  userID: string
 ) => {
   const existing = await prisma.ticket.findUnique({
     where: { id: ticketId },
@@ -81,6 +87,9 @@ export const updateTicket = async (
     throw new Error("NOT_FOUND");
   }
 
+  if (existing.createdByID !== userID) {
+    throw new Error("FORBIDDEN");
+  }
   if (data.status && existing.status) {
     const isValid = isValidStatusTransition(existing.status, data.status);
 

@@ -1,15 +1,19 @@
 //extracts req.body & req.query, then calls service for business logic
 import { createTicket, getTicket, updateTicket } from "../services/service.js";
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../types/auth.js";
 
 type TicketIdParams = {
   //setting type to let TS know
   id: string;
 };
 
-export async function getTicketController(req: Request, res: Response) {
+export async function getTicketController(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
-    const result = await getTicket(req.query);
+    const result = await getTicket(req.query, req.user.id);
     return res.status(200).json({
       success: true,
       data: result,
@@ -22,9 +26,12 @@ export async function getTicketController(req: Request, res: Response) {
   }
 }
 
-export async function createTicketController(req: Request, res: Response) {
+export async function createTicketController(
+  req: AuthenticatedRequest,
+  res: Response
+) {
   try {
-    const result = await createTicket(req.body);
+    const result = await createTicket(req.body, req.user.id);
     return res
       .status(201)
       .json({ success: true, message: "Ticket created", data: result });
@@ -49,11 +56,15 @@ export async function createTicketController(req: Request, res: Response) {
 }
 
 export async function updateTicketController(
-  req: Request<TicketIdParams>, //let TS know what content is in here
+  req: AuthenticatedRequest<TicketIdParams>, //let TS know what content is in here
   res: Response
 ) {
   try {
-    const updatedTicket = await updateTicket(req.params.id, req.body);
+    const updatedTicket = await updateTicket(
+      req.params.id,
+      req.body,
+      req.user.id
+    );
     return res.status(200).json({
       success: true,
       message: "Ticket has been updated",
@@ -64,6 +75,12 @@ export async function updateTicketController(
       return res.status(404).json({
         success: false,
         message: "Ticket not found",
+      });
+    }
+    if (error.message === "FORBIDDEN") {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden - only user that created this ticket can update it",
       });
     }
     if (error.message === "INVALID_STATUS_TRANSITION") {
