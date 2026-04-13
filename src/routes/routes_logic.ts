@@ -14,7 +14,8 @@ import {
 
 import {
   createTicketController,
-  getTicketController,
+  getTicketsController,
+  getSingleTicketController,
   updateTicketController,
 } from "../controllers/controller.js";
 
@@ -41,8 +42,10 @@ queryRouter.get(
   "/tickets",
   requireAuth,
   validateQuery(getTicketQuerySchema),
-  getTicketController
+  getTicketsController
 );
+
+queryRouter.get("/tickets/:id", requireAuth, getSingleTicketController);
 
 queryRouter.post(
   "/create",

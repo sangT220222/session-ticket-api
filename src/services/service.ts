@@ -15,7 +15,11 @@ type CreateTicketInput = z.infer<typeof createTicketSchema>;
 
 type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
 
-export const getTicket = async (query: GetTicketInput, userID: string) => {
+export const getTickets = async (
+  query: GetTicketInput,
+  userID: string,
+  userRole: string
+) => {
   const {
     title,
     description,
@@ -35,37 +39,42 @@ export const getTicket = async (query: GetTicketInput, userID: string) => {
     throw new Error("USER_NOT_FOUND");
   }
 
-  const isAdmin = userInfo?.role === "Admin";
+  const isAdmin = userRole === "Admin";
+  const whereClause = {
+    ...(title && { title: { contains: title, mode: "insensitive" as const } }),
+    ...(description && {
+      description: { contains: description, mode: "insensitive" as const },
+    }),
+    ...(priority && { priority }),
+    ...(status && { status }),
+    ...(!isAdmin && { createdByID: userID }),
+  };
 
-  if (isAdmin) {
-    return prisma.ticket.findMany({
-      where: {
-        ...(title && { title: { contains: title, mode: "insensitive" } }),
-        ...(description && {
-          description: { contains: description, mode: "insensitive" },
-        }),
-        ...(priority && { priority }),
-        ...(status && { status }),
-      },
-      orderBy: sort ? { [sort]: order } : { createdAt: order },
-      skip: (page - 1) * safeLimit,
-      take: safeLimit,
-    });
-  }
   return prisma.ticket.findMany({
-    where: {
-      ...(title && { title: { contains: title, mode: "insensitive" } }),
-      ...(description && {
-        description: { contains: description, mode: "insensitive" },
-      }),
-      ...(priority && { priority }),
-      ...(status && { status }),
-      createdByID: userID,
-    },
+    where: whereClause,
     orderBy: sort ? { [sort]: order } : { createdAt: order },
     skip: (page - 1) * safeLimit,
     take: safeLimit,
   });
+};
+
+export const getTicket = async (
+  ticketId: string,
+  userID: string,
+  userRole: string
+) => {
+  const userInfo = await prisma.user.findUnique({ where: { id: userID } });
+  if (!userInfo) {
+    throw new Error("USER_NOT_FOUND");
+  }
+  const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+  if (!ticket) {
+    throw new Error("NOT_FOUND");
+  }
+  if (ticket.createdByID !== userID && userRole !== "Admin") {
+    throw new Error("FORBIDDEN");
+  }
+  return ticket;
 };
 
 export const createTicket = async (
@@ -99,7 +108,8 @@ export const createTicket = async (
 export const updateTicket = async (
   ticketId: string,
   data: UpdateTicketInput,
-  userID: string
+  userID: string,
+  userRole: string
 ) => {
   const existing = await prisma.ticket.findUnique({
     where: { id: ticketId },
@@ -109,9 +119,10 @@ export const updateTicket = async (
     throw new Error("NOT_FOUND");
   }
 
-  if (existing.createdByID !== userID) {
+  if (existing.createdByID !== userID && userRole !== "Admin") {
     throw new Error("FORBIDDEN");
   }
+
   if (data.status && existing.status) {
     const isValid = isValidStatusTransition(existing.status, data.status);
 
