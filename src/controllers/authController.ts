@@ -12,6 +12,7 @@ export async function registerUserController(req: Request, res: Response) {
         id: result.id,
         email: result.email,
         name: result.name,
+        role: result.role,
         createdAt: result.createdAt,
       },
     });
@@ -37,8 +38,9 @@ export async function registerUserController(req: Request, res: Response) {
 
 export async function loginUserController(req: Request, res: Response) {
   try {
-    const userID = await loginUser(req.body);
-    req.session.userId = userID;
+    const user = await loginUser(req.body);
+    req.session.userId = user.id;
+    req.session.userRole = user.role;
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -84,22 +86,26 @@ export const requireAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ message: "Unauthorised acess" });
+  try {
+    if (!req.session.userId || !req.session.userRole) {
+      return res.status(401).json({ message: "Unauthorised acess" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorised acess" });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
   }
-
-  const user = await prisma.user.findUnique({
-    where: { id: req.session.userId },
-  });
-
-  if (!user) {
-    return res.status(401).json({ message: "Unauthorised acess" });
-  }
-
-  req.user = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  };
-  next();
 };

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Ticket" ALTER COLUMN "createdByID" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "role" DROP DEFAULT;

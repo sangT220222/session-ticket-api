@@ -1,19 +1,23 @@
 //extracts req.body & req.query, then calls service for business logic
-import { createTicket, getTicket, updateTicket } from "../services/service.js";
-import { Response } from "express";
-import { AuthenticatedRequest } from "../types/auth.js";
+import {
+  createTicket,
+  getTickets,
+  getTicket,
+  updateTicket,
+} from "../services/service.js";
+import { Request, Response } from "express";
 
 type TicketIdParams = {
   //setting type to let TS know
   id: string;
 };
 
-export async function getTicketController(
-  req: AuthenticatedRequest,
-  res: Response
-) {
+export async function getTicketsController(req: Request, res: Response) {
   try {
-    const result = await getTicket(req.query, req.user.id);
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorised access" });
+    }
+    const result = await getTickets(req.query, req.user.id, req.user.role);
     return res.status(200).json({
       success: true,
       data: result,
@@ -26,11 +30,39 @@ export async function getTicketController(
   }
 }
 
-export async function createTicketController(
-  req: AuthenticatedRequest,
+export async function getSingleTicketController(
+  req: Request<TicketIdParams>,
   res: Response
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorised access" });
+    }
+    const ticket = await getTicket(req.params.id, req.user.id, req.user.role);
+    return res.status(200).json({
+      success: true,
+      data: ticket,
+    });
+  } catch (error: any) {
+    if (error.message === "NOT_FOUND") {
+      return res.status(404).json({
+        success: false,
+        message: "Ticket not found",
+      });
+    }
+    if (error.message === "FORBIDDEN") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthroised access" });
+    }
+  }
+}
+
+export async function createTicketController(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorised access" });
+    }
     const result = await createTicket(req.body, req.user.id);
     return res
       .status(201)
@@ -56,14 +88,18 @@ export async function createTicketController(
 }
 
 export async function updateTicketController(
-  req: AuthenticatedRequest<TicketIdParams>, //let TS know what content is in here
+  req: Request<TicketIdParams>, //let TS know what content is in here
   res: Response
 ) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorised access" });
+  }
   try {
     const updatedTicket = await updateTicket(
       req.params.id,
       req.body,
-      req.user.id
+      req.user.id,
+      req.user.role
     );
     return res.status(200).json({
       success: true,
@@ -89,7 +125,7 @@ export async function updateTicketController(
         message: "Invalid status transition",
       });
     }
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
