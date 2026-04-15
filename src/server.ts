@@ -4,10 +4,13 @@ import cors from "cors";
 import { queryRouter } from "./routes/routes_logic.js";
 import { authRouter } from "./routes/auth_routes.js";
 import { sessionMiddleware } from "./authentication/session.js";
+import helmet from "helmet";
 
 // dotenv.config();
 const app = express();
 app.use(express.json());
+//helmet adds secure HTTP headers to every responses to protect against common web vulneribilities
+app.use(helmet());
 
 app.use(
   cors({

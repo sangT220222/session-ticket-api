@@ -14,6 +14,7 @@ export const sessionMiddleware = session({
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "lax",
+    maxAge: 15 * 60 * 1000, //15 minutes
   },
   //secure -> HTTPS only connection
   //putt secure:false for dev env
