@@ -50,12 +50,24 @@ export const getTickets = async (
     ...(!isAdmin && { createdByID: userID }),
   };
 
-  return prisma.ticket.findMany({
+  const totalTicketNum = await prisma.ticket.count({ where: whereClause });
+  const totalPages = Math.ceil(totalTicketNum / safeLimit);
+  const ticketsResult = await prisma.ticket.findMany({
     where: whereClause,
     orderBy: sort ? { [sort]: order } : { createdAt: order },
     skip: (page - 1) * safeLimit,
     take: safeLimit,
   });
+
+  return {
+    data: ticketsResult,
+    pagination: {
+      page,
+      limit: safeLimit,
+      totalTickets: totalTicketNum,
+      totalPages: totalPages,
+    },
+  };
 };
 
 export const getTicket = async (

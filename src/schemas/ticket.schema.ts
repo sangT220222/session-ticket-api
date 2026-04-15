@@ -6,7 +6,7 @@ export const getTicketQuerySchema = z
     description: z.string().trim().optional(),
     priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
     status: z.enum(["todo", "in_progress", "completed"]).optional(),
-    sort: z.enum(["createdAt", "priority", "status"]).optional(),
+    sort: z.enum(["createdAt", "priority", "status", "title"]).optional(),
     order: z.enum(["asc", "desc"]).optional(),
     page: z.coerce.number().min(1).optional(),
     limit: z.coerce.number().min(1).max(100).optional(),
