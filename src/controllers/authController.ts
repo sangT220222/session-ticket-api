@@ -49,7 +49,7 @@ export async function loginUserController(req: Request, res: Response) {
     if (error.message === "INVALID") {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: "Authentication failed",
       });
     }
     console.log(error);
