@@ -6,9 +6,14 @@ export const registerUserSchema = z
     password: z
       .string()
       .min(12, "Password must be at least 12 characters long"),
+    confirmPassword: z.string(),
     name: z.string().min(1).optional(),
   })
-  .strict();
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Password don't match",
+  });
 
 export const loginUserSchema = z
   .object({

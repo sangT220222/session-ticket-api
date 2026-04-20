@@ -1,4 +1,5 @@
 import { ZodType } from "zod";
+import * as z from "zod";
 import { Request, Response, NextFunction } from "express";
 
 export function validateRegisterBody<T>(schema: ZodType<T>) {
@@ -6,8 +7,8 @@ export function validateRegisterBody<T>(schema: ZodType<T>) {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       return res.status(400).json({
-        message: "Details did not meet the requirement",
-        error: result.error.flatten().fieldErrors,
+        message: "Details did not meet the requirement v2",
+        error: z.flattenError(result.error).fieldErrors,
       });
     }
     req.body = result.data; //assign to a safe parsed result
