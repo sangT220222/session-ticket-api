@@ -19,7 +19,7 @@ import {
   updateTicketController,
 } from "../controllers/controller.js";
 
-import { requireAuth } from "../controllers/authController.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 export const queryRouter = Router();
 

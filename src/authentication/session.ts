@@ -30,7 +30,7 @@ if (!process.env.SESSION_SECRET) {
   throw new Error("EMPTY_SECRET_KEY");
 }
 
-export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME;
+export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME; //used in clearing cookie when user log out
 
 export const sessionMiddleware = session({
   store: redisStore,

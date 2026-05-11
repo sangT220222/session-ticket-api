@@ -34,10 +34,6 @@ export const getTickets = async (
 
   const safeLimit = Math.min(limit, 50); // extra safety cap - in case user types limit=10000 for eg
   //need to check user role and determine the SQL statement
-  const userInfo = await prisma.user.findUnique({ where: { id: userID } });
-  if (!userInfo) {
-    throw new Error("USER_NOT_FOUND");
-  }
 
   const isAdmin = userRole === "Admin";
   const whereClause = {
@@ -75,10 +71,6 @@ export const getTicket = async (
   userID: string,
   userRole: string
 ) => {
-  const userInfo = await prisma.user.findUnique({ where: { id: userID } });
-  if (!userInfo) {
-    throw new Error("USER_NOT_FOUND");
-  }
   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
   if (!ticket) {
     throw new Error("NOT_FOUND");
