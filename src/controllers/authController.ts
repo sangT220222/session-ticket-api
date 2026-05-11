@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { registerUser, loginUser } from "../services/authService.js";
-import { prisma } from "../lib/prisma.js";
+import { SESSION_COOKIE_NAME } from "../authentication/session.js";
 
 export async function registerUserController(req: Request, res: Response) {
   try {
     const result = await registerUser(req.body);
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: "User created",
       data: {
@@ -64,7 +64,7 @@ export function logoutUserController(req: Request, res: Response) {
     if (error) {
       return res.status(500).json({ message: "Failed to log out" });
     }
-    res.clearCookie("connect.sid");
+    res.clearCookie(SESSION_COOKIE_NAME);
     res.status(200).json({ message: "Logged out" });
   });
 }
@@ -79,33 +79,3 @@ export function meController(req: Request, res: Response) {
     userID: req.session.userId ?? null,
   });
 }
-
-//protecting routes - requiring only logged in users to execute selecive ones
-export const requireAuth = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    if (!req.session.userId || !req.session.userRole) {
-      return res.status(401).json({ message: "Unauthorised acess" });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: req.session.userId },
-    });
-
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorised acess" });
-    }
-
-    req.user = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
-    next();
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
