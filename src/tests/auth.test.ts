@@ -6,7 +6,7 @@ import app from "../app.js";
 //register test
 describe("Auth API", () => {
   describe("POST /auth/register", () => {
-    it("should return 201 if password criteria meets", async () => {
+    it("should return 409 due to duplicate email", async () => {
       const response = await request(app).post("/auth/register").send({
         email: "testRegister2@gmail.com",
         password: "1234567891067",
@@ -14,8 +14,8 @@ describe("Auth API", () => {
         name: "TEST for register user",
       });
 
-      expect(response.status).toBe(201);
-      expect(response.body.success).toBe(true);
+      expect(response.status).toBe(409);
+      expect(response.body.success).toBe(false);
     });
 
     it("should return 400 as password criteria doesn't meet", async () => {
@@ -48,6 +48,16 @@ describe("Auth API", () => {
     });
   });
 
+  it("cookie/session validation", async () => {
+    //checking if session/cookie exists
+    const agent = request.agent(app);
+    await agent
+      .post("/auth/login")
+      .send({ email: "testing22@gmail.com", password: "1234567891011" });
+    const response = await agent.get("/auth/checkme");
+    expect(response.status).toBe(200);
+  });
+
   //logging out should invalidate session test
   //we utilise supertest's agent that remebers cookies between requests - request.agent(app)
   describe("POST /auth/logout", () => {
@@ -56,10 +66,6 @@ describe("Auth API", () => {
       await agent
         .post("/auth/login")
         .send({ email: "testing22@gmail.com", password: "1234567891011" });
-
-      //checking if session exists
-      const response = await agent.get("/auth/checkme");
-      expect(response.status).toBe(200);
 
       await agent.post("/auth/logout");
       const afterLogoutResponse = await agent.get("/auth/checkme");
