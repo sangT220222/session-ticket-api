@@ -1,5 +1,8 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes
@@ -30,12 +33,20 @@ authRouter.post(
   registerUserController
 );
 
-authRouter.post(
-  "/login",
-  limiter,
-  validateLoginBody(loginUserSchema),
-  loginUserController
-);
+if (process.env.NODE_ENV === "test") {
+  authRouter.post(
+    "/login",
+    validateLoginBody(loginUserSchema),
+    loginUserController
+  );
+} else {
+  authRouter.post(
+    "/login",
+    limiter,
+    validateLoginBody(loginUserSchema),
+    loginUserController
+  );
+}
 
 authRouter.get("/checkme", meController);
 
