@@ -195,3 +195,119 @@ describe("Creating a ticket", () => {
 });
 
 //update ticket
+describe("Updating a ticket - different scenarios", () => {
+  // code below has been commented out as this worked, running it again will cause a test fail
+
+  // it("Should successfully update a ticket - ticket belongs to user", async () => {
+  //   const agent = request.agent(app);
+  //   await agent
+  //     .post("/auth/login") //normal user login credential - 2 tickets done
+  //     .send({
+  //       email: "twoTickets@gmail.com",
+  //       password: "testing2ticketsAccount",
+  //     });
+  //   const result = await agent
+  //     .patch("/api/update/cmq6u7x6c0002esbrmi63tf24")
+  //     .send({
+  //       priority: "low",
+  //     });
+  //   expect(result.status).toBe(200);
+  //   expect(result.body.success).toBe(true);
+  // });
+  it("Should return error - value to update is not in enum", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/auth/login") //normal user login credential - 2 tickets done
+      .send({
+        email: "twoTickets@gmail.com",
+        password: "testing2ticketsAccount",
+      });
+    const result = await agent
+      .patch("/api/update/cmq6u7x6c0002esbrmi63tf24")
+      .send({
+        priority: "FIVE",
+      });
+    expect(result.status).toBe(400);
+  });
+  it("Should return error - field provided is false", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/auth/login") //normal user login credential - 2 tickets done
+      .send({
+        email: "twoTickets@gmail.com",
+        password: "testing2ticketsAccount",
+      });
+    const result = await agent
+      .patch("/api/update/cmq6u7x6c0002esbrmi63tf24")
+      .send({
+        priorities: "urgent",
+      });
+    expect(result.status).toBe(400);
+  });
+
+  //updating someone else's ticket
+  it("Should return error - not user's ticket"),
+    async () => {
+      const agent = request.agent(app);
+      await agent.post("/auth/login").send({
+        email: "twoTickets@gmail.com",
+        password: "testing2ticketsAccount",
+      });
+      const response = await agent.patch(
+        "/api/update/cmnoqdlll0000rzbru6jmgreh"
+      );
+      expect(response.status).toBe(403);
+    };
+  //test for invalid priority status transtion
+  it("Should return error - not invalid status transition"),
+    async () => {
+      const agent = request.agent(app);
+      await agent
+        .post("/auth/login") //normal user login credential - 2 tickets done
+        .send({
+          email: "twoTickets@gmail.com",
+          password: "testing2ticketsAccount",
+        });
+      const result = await agent
+        .patch("/api/update/cmq6u7x6c0002esbrmi63tf24")
+        .send({
+          priority: "high",
+        });
+      expect(result.status).toBe(400);
+    };
+
+  //ticket not found
+  it("Should return error - ticket does not exist"),
+    async () => {
+      const agent = request.agent(app);
+      await agent
+        .post("/auth/login") //normal user login credential - 2 tickets done
+        .send({
+          email: "twoTickets@gmail.com",
+          password: "testing2ticketsAccount",
+        });
+      const result = await agent
+        .patch("/api/update/cmq6u7x6c0002esbrmi63tf44")
+        .send({
+          priority: "high",
+        });
+      expect(result.status).toBe(404);
+    };
+
+  // code below has been commented out as this worked, running it again will cause a test fail
+
+  //admin can update this ticket
+  // it("Success - admin can update any tickets", async () => {
+  //   const agent = request.agent(app);
+  //   await agent
+  //     .post("/auth/login") //admin login credential - should see all tickets, currently 19 tickets in the db
+  //     .send({ email: "testing22@gmail.com", password: "1234567891011" });
+  //   const response = await agent
+  //     .patch("/api/update/cmq6u7x6c0002esbrmi63tf24")
+  //     .send({
+  //       status: "in_progress",
+  //     });
+  //   expect(response.status).toBe(200);
+  //   expect(response.body.success).toBe(true);
+  // });
+});
