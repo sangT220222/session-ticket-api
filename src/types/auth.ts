@@ -9,7 +9,7 @@ export type AuthenticatedUser = {
 };
 
 if (!process.env.TEST_DUMMY_HASH) {
-  throw new Error("DUMMY_HASH is not set");
+  throw new Error("TEST_DUMMY_HASH is not set");
 }
 
 export const TEST_DUMMY_HASH = process.env.TEST_DUMMY_HASH;

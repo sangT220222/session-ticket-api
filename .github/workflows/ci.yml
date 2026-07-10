@@ -18,7 +18,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: session_ticket_db
-          TEST_DUMMY_HASH: $2b$10$CwTycUXWue0Thq9StjUM0uJ8z7e0pQpZK0s8AjtKoaVHgMH7Yjg9e
+          TEST_DUMMY_HASH: "$2b$10$CwTycUXWue0Thq9StjUM0uJ8z7e0pQpZK0s8AjtKoaVHgMH7Yjg9e"
 
         ports:
           - "5433:5432"
@@ -30,8 +30,8 @@ jobs:
 
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/session_ticket_db
-      REDIS_URL: redis://localhost:6379
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5433/session_ticket_db"
+      REDIS_URL: "redis://localhost:6379"
 
     steps:
       #always checkout the cuurent repo - git checkout feature/eg_change
