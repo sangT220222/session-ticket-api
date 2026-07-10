@@ -3,7 +3,7 @@
 import { prisma } from "../lib/prisma.js";
 import * as z from "zod";
 import * as bcrypt from "bcrypt";
-import { DUMMY_HASH } from "../types/auth.js";
+import { TEST_DUMMY_HASH } from "../types/auth.js";
 
 import { loginUserSchema, registerUserSchema } from "../schemas/authSchema.js";
 
@@ -40,7 +40,7 @@ export const loginUser = async (userData: LoginUserBody) => {
     },
   });
 
-  const passwordHash = user?.passwordHash ?? DUMMY_HASH;
+  const passwordHash = user?.passwordHash ?? TEST_DUMMY_HASH;
 
   const isPasswordValid = await bcrypt.compare(userData.password, passwordHash);
 

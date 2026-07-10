@@ -18,6 +18,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: session_ticket_db
+          TEST_DUMMY_HASH: $2b$10$CwTycUXWue0Thq9StjUM0uJ8z7e0pQpZK0s8AjtKoaVHgMH7Yjg9e
+
         ports:
           - "5433:5432"
 
