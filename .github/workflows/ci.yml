@@ -28,6 +28,8 @@ jobs:
 
     env:
       NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/session_ticket_db
+      REDIS_URL: redis://localhost:6379
 
     steps:
       #always checkout the cuurent repo - git checkout feature/eg_change
