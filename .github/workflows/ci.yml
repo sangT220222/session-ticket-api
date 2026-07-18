@@ -1,0 +1,60 @@
+name: CI #name can be anything descriptive
+on:
+  push: #can configure on block with other events, like pull, release publishes, regular schedule
+    branches:
+      - main #push - action will trigger if someone pushes to the main branch
+      - feature/github-actions
+
+#jobs block specifies the jobs to be executed by this workflow
+jobs:
+  build: #environment specification
+    #choosing the platform jobs run on, such as Windows, macOS, Ubuntu, on Github VM that will execute the workflow.
+    runs-on: ubuntu-latest #ubuntu was picked as it's fastest & cost efficient
+    #steps specifies what procedure we take to mimic the testing scenario
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: session_ticket_db
+
+        ports:
+          - "5433:5432"
+
+      redis:
+        image: redis:7
+        ports:
+          - "6379:6379"
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5433/session_ticket_db"
+      REDIS_URL: "redis://localhost:6379"
+      TEST_DUMMY_HASH: "$2b$10$CwTycUXWue0Thq9StjUM0uJ8z7e0pQpZK0s8AjtKoaVHgMH7Yjg9e"
+      SESSION_COOKIE_NAME: "session_ticket_sid"
+      SESSION_SECRET: "699883fd16686b6b381bed0fe386e2410a06b6b7fe681dba300c419a0bd814fb"
+
+    steps:
+      #always checkout the cuurent repo - git checkout feature/eg_change
+      - name: Checkout repository
+        uses: actions/checkout@v7 #pre packaged action provided by GitHub or community, this package contains multiple steps and saves time
+      #actions/checkout performs a local git clone of the repo
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        #actions/setup-node@v6 takes care of installing and setting Node.js inside the container running the job
+        with:
+          node-version: "22"
+      #specifies what node version to install and set up with
+      - name: Install exact dependencies in package.json
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test

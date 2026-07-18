@@ -8,8 +8,8 @@ export type AuthenticatedUser = {
   role: string;
 };
 
-if (!process.env.DUMMY_HASH) {
-  throw new Error("DUMMY_HASH is not set");
+if (!process.env.TEST_DUMMY_HASH) {
+  throw new Error("TEST_DUMMY_HASH is not set");
 }
 
-export const DUMMY_HASH = process.env.DUMMY_HASH;
+export const TEST_DUMMY_HASH = process.env.TEST_DUMMY_HASH;
