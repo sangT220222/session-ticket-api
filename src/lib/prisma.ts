@@ -3,7 +3,10 @@
 
 import { PrismaClient } from "../../prisma/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import "dotenv/config";
+// import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env.test" });
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
