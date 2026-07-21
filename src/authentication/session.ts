@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import { RedisStore } from "connect-redis";
 import { createClient } from "redis";
 
-dotenv.config();
+// dotenv.config(); //for .env default
+dotenv.config({ path: ".env.test" });
 
 if (!process.env.REDIS_URL) {
   throw new Error("REDIS_URL is missing");

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config(); //for .env default
+dotenv.config({ path: ".env.test" });
 
 export type AuthenticatedUser = {
   id: string;
