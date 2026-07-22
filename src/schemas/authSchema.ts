@@ -18,6 +18,9 @@ export const registerUserSchema = z
 export const loginUserSchema = z
   .object({
     email: z.email(),
-    password: z.string().min(12, "Password is required"),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(12, "Password must be at lease 12 characters"),
   })
   .strict();
