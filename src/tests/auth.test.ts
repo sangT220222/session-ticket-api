@@ -3,10 +3,6 @@ import request from "supertest";
 import app from "../app.js";
 import { TEST_USER } from "./fixtures/users.js";
 
-console.log("HERE");
-console.log(process.env.DATABASE_URL);
-console.log(TEST_USER.admin.email);
-console.log(TEST_USER.admin.password);
 //describe = grouping related tests and benchmarks into one place
 //register test
 describe("Auth API", () => {
@@ -40,8 +36,8 @@ describe("Auth API", () => {
         email: TEST_USER.admin.email,
         password: TEST_USER.admin.password,
       });
-      console.log("CHECKING RESPONSE");
-      console.log(response.status, response.body);
+      // console.log("CHECKING RESPONSE");
+      // console.log(response.status, response.body);
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });
