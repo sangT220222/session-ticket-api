@@ -2,6 +2,7 @@ import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../app.js";
 import { TEST_USER } from "./fixtures/users.js";
+import { loginRequest } from "./helpers/authHelper.js";
 
 //describe = grouping related tests and benchmarks into one place
 //register test
@@ -32,10 +33,14 @@ describe("Auth API", () => {
 
   describe("POST /auth/login", () => {
     it("should login success after valid credential Alice", async () => {
-      const response = await request(app).post("/auth/login").send({
-        email: TEST_USER.admin.email,
-        password: TEST_USER.admin.password,
-      });
+      // const response = await request(app).post("/auth/login").send({
+      //   email: TEST_USER.admin.email,
+      //   password: TEST_USER.admin.password,
+      // });
+      const response = await loginRequest(
+        TEST_USER.admin.email,
+        TEST_USER.admin.password
+      );
       // console.log("CHECKING RESPONSE");
       // console.log(response.status, response.body);
       expect(response.status).toBe(200);
@@ -43,28 +48,29 @@ describe("Auth API", () => {
     });
 
     it("should login success after valid credential BOB", async () => {
-      const response = await request(app).post("/auth/login").send({
-        email: TEST_USER.user1.email,
-        password: TEST_USER.user1.password,
-      });
+      const response = await loginRequest(
+        TEST_USER.user1.email,
+        TEST_USER.user1.password
+      );
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });
 
     it("should return 401 with invalid credentials", async () => {
-      const response = await request(app)
-        .post("/auth/login")
-        .send({ email: TEST_USER.admin.email, password: "1234567891099" });
-
+      const response = await loginRequest(
+        TEST_USER.admin.email,
+        "fakePassword123"
+      );
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
 
     it("should return 401 with invalid credentials", async () => {
-      const response = await request(app)
-        .post("/auth/login")
-        .send({ email: TEST_USER.user1.email, password: "1234567891099" });
+      const response = await loginRequest(
+        TEST_USER.user1.email,
+        "anotherFakePassword"
+      );
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
