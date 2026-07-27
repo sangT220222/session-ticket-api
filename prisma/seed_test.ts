@@ -3,8 +3,10 @@ import dotenv from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "./generated/prisma/client.js";
 import { Pool } from "pg";
+import bcrypt from "bcrypt";
 
 dotenv.config({ path: ".env.test" });
+const passwordHash = await bcrypt.hash("password1234", 10);
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -15,19 +17,21 @@ async function main() {
     where: { email: "alice@testing.com" },
     update: {},
     create: {
+      id: "testUser1",
       email: "alice@testing.com",
       name: "Admin Alice",
       role: "Admin",
-      passwordHash: "password123",
+      passwordHash: passwordHash,
     },
   });
   const bob = await prisma.user.upsert({
     where: { email: "bob@testing.com" },
     update: {},
     create: {
+      id: "testUser2",
       email: "bob@testing.com",
       name: "Bob",
-      passwordHash: "password123",
+      passwordHash: passwordHash,
     },
   });
   console.log({ alice, bob });
@@ -37,6 +41,7 @@ async function main() {
     update: {},
     create: {
       title: "First dummy ticket",
+      id: "cmrxhd1eu00003b6pdabo15kf",
       createdByID: alice.id,
     },
   });
@@ -44,6 +49,7 @@ async function main() {
   await prisma.ticket.create({
     data: {
       title: "Second dummy ticket",
+      id: "cmrxhe99200013b6prrbd7sbg",
       createdByID: bob.id,
     },
   });
@@ -51,6 +57,7 @@ async function main() {
   await prisma.ticket.create({
     data: {
       title: "Third dummy ticket",
+      id: "cmrxhee0d00023b6p9jmn2ic4",
       createdByID: alice.id,
     },
   });
@@ -58,6 +65,7 @@ async function main() {
   await prisma.ticket.create({
     data: {
       title: "Fourth dummy ticket",
+      id: "cmrxheis400033b6prrdv4pv6",
       createdByID: alice.id,
     },
   });
