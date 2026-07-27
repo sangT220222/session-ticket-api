@@ -3,7 +3,7 @@ on:
   push: #can configure on block with other events, like pull, release publishes, regular schedule
     branches:
       - main #push - action will trigger if someone pushes to the main branch
-      - feature/github-actions
+      - feature/github-actions-finalisation
 
 #jobs block specifies the jobs to be executed by this workflow
 jobs:
@@ -54,13 +54,13 @@ jobs:
         run: npx prisma generate
 
       - name: Apply database migration
-      - run: npx prisma migrate deploy
+        run: npx prisma migrate deploy
 
       - name: Seed test database
-      - run: npx prisma db seed
+        run: npx prisma db seed
 
       - name: Build
         run: npm run build
 
       - name: Test
-        run: npm run test -- -run
+        run: npm run test -- --run
