@@ -9,13 +9,13 @@ import {
   buildTicketTitleNoChar,
 } from "./fakerHelper.js";
 
-export async function loginUser(
-  agent: TestAgent,
-  email: string,
-  password: string
-) {
-  return agent.post("/auth/login").send({ email, password });
-}
+// export async function loginUser(
+//   agent: TestAgent,
+//   email: string,
+//   password: string
+// ) {
+//   return agent.post("/auth/login").send({ email, password });
+// }
 
 export async function createTicket(agent: TestAgent) {
   const newTicket = buildTicket();

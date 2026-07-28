@@ -4,7 +4,6 @@ import app from "../app.js";
 import { TEST_USER } from "./fixtures/users.js";
 import { TEST_TICKETS } from "./fixtures/tickets.js";
 import {
-  loginUser,
   createTicket,
   createWrongTicket1,
   createWrongTicket2,
@@ -12,7 +11,7 @@ import {
   createWrongTicket4,
   createWrongTicket5,
 } from "./helpers/ticketHelper.js";
-import { create } from "node:domain";
+import { loginRequest } from "./helpers/authHelper.js";
 
 // - unauthenticated user blocked
 // - normal user only sees own tickets
@@ -32,7 +31,7 @@ it("unathenticated user blocked", async () => {
 describe("Getting normal users' respective tickets", () => {
   it("normal user only seeing their tickets", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const response = await agent.get("/api/tickets");
     expect(response.status).toBe(200);
     // expect(response.body.data.data).toHaveLength(0);
@@ -40,7 +39,7 @@ describe("Getting normal users' respective tickets", () => {
 
   it("admin seeing all tickets", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+    await loginRequest(agent, TEST_USER.admin.email, TEST_USER.admin.password);
     const response = await agent.get("/api/tickets");
     expect(response.status).toBe(200);
     expect(response.body.data.pagination.totalTickets).toBeGreaterThanOrEqual(
@@ -53,7 +52,7 @@ describe("Getting normal users' respective tickets", () => {
 describe("Getting single ticket", () => {
   it("Getting user's single ticket", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const singleTicket = await agent.get(getQuery2);
     // console.log(singleTicket.body.data.length());
     expect(singleTicket.body).toBeDefined();
@@ -61,7 +60,7 @@ describe("Getting single ticket", () => {
   });
   it("invalid as ticket doesn't belong to user, and user not admin", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const noTicket = await agent.get(getQuery);
     expect(noTicket.status).toBe(403);
     expect(noTicket.body.success).toBe(false);
@@ -72,7 +71,7 @@ describe("Getting single ticket", () => {
 describe("Creating a ticket", () => {
   it("ticket to be created successfully", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const ticket = await createTicket(agent);
     expect(ticket.response.status).toBe(201);
     expect(ticket.response.body.success).toBe(true);
@@ -97,21 +96,21 @@ describe("Creating a ticket", () => {
   // // });
   it("should reject as priority was not provided", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const result = await createWrongTicket1(agent);
     expect(result.response.status).toBe(400);
   });
 
   it("should reject as title was not provided", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const result = await createWrongTicket2(agent);
     expect(result.response.status).toBe(400);
   });
 
   it("should reject as title is only spaces", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+    await loginRequest(agent, TEST_USER.admin.email, TEST_USER.admin.password);
     const result = await createWrongTicket3(agent);
     expect(result.response.status).toBe(400);
   });
@@ -134,14 +133,14 @@ describe("Creating a ticket", () => {
 
   it("should reject as priority not in defined enum list", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+    await loginRequest(agent, TEST_USER.admin.email, TEST_USER.admin.password);
     const result = await createWrongTicket4(agent);
     expect(result.response.status).toBe(400);
   });
 
   it("should reject as field provided isn't valid", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+    await loginRequest(agent, TEST_USER.admin.email, TEST_USER.admin.password);
     const result = await createWrongTicket5(agent);
     expect(result.response.status).toBe(400);
   });
@@ -153,7 +152,7 @@ describe("Updating a ticket - different scenarios", () => {
 
   it("Should successfully update a ticket - ticket belongs to user", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
     const result = await agent.patch(updateQueryTicket2).send({
       priority: "low",
     });
@@ -162,7 +161,7 @@ describe("Updating a ticket - different scenarios", () => {
   });
   it("Should return error - value to update is not in enum", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
 
     const result = await agent.patch(updateQueryTicket2).send({
       priority: "FIVE",
@@ -171,7 +170,7 @@ describe("Updating a ticket - different scenarios", () => {
   });
   it("Should return error - field provided is false", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+    await loginRequest(agent, TEST_USER.user1.email, TEST_USER.user1.password);
 
     const result = await agent.patch(updateQueryTicket2).send({
       priorities: "urgent",
@@ -183,7 +182,11 @@ describe("Updating a ticket - different scenarios", () => {
   it("Should return error - not user's ticket"),
     async () => {
       const agent = request.agent(app);
-      await loginUser(agent, TEST_USER.user1.email, TEST_USER.user1.password);
+      await loginRequest(
+        agent,
+        TEST_USER.user1.email,
+        TEST_USER.user1.password
+      );
       const response = await agent.patch(updateQueryTicket3);
       expect(response.status).toBe(403);
     };
@@ -191,7 +194,11 @@ describe("Updating a ticket - different scenarios", () => {
   it("Should return error - not invalid status transition"),
     async () => {
       const agent = request.agent(app);
-      await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+      await loginRequest(
+        agent,
+        TEST_USER.admin.email,
+        TEST_USER.admin.password
+      );
       const result = await agent.patch(updateQueryTicket2).send({
         priority: "high",
       });
@@ -221,7 +228,7 @@ describe("Updating a ticket - different scenarios", () => {
   // admin can update this ticket
   it("Success - admin can update any tickets", async () => {
     const agent = request.agent(app);
-    await loginUser(agent, TEST_USER.admin.email, TEST_USER.admin.password);
+    await loginRequest(agent, TEST_USER.admin.email, TEST_USER.admin.password);
 
     const response = await agent.patch(updateQueryTicket3).send({
       priority: "low",
