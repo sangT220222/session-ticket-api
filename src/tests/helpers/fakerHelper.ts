@@ -1,8 +1,5 @@
 import { faker } from "@faker-js/faker";
-import request from "supertest";
-import app from "../../app.js";
 
-//     const result = await agent.post("/api/create").send({
 export function buildTicket() {
   return {
     title: faker.lorem.words(3),
