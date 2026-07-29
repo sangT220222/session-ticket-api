@@ -2,13 +2,13 @@ import request from "supertest";
 import app from "../../app.js";
 export type TestAgent = ReturnType<typeof request.agent>;
 
-// export async function loginRequest(email: string, password: string) {
-//   return request(app).post("/auth/login").send({
-//     email: email,
-//     password: password,
-//   });
-// }
-export async function loginRequest(
+export async function loginRequestAuth(email: string, password: string) {
+  return request(app).post("/auth/login").send({
+    email: email,
+    password: password,
+  });
+}
+export async function loginRequestTicket(
   agent: TestAgent,
   email: string,
   password: string

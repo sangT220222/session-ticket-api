@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../app.js";
 import { TEST_USER } from "./fixtures/users.js";
-import { loginRequest, registerUser } from "./helpers/authHelper.js";
+import { loginRequestAuth, registerUser } from "./helpers/authHelper.js";
 import { REGISTER_USER } from "./factories/user_factory.js";
 
 //describe = grouping related tests and benchmarks into one place
@@ -12,8 +12,7 @@ const agent = request.agent(app);
 describe("Auth API", () => {
   describe("POST /auth/login", () => {
     it("should login success after valid credential Alice", async () => {
-      const response = await loginRequest(
-        agent,
+      const response = await loginRequestAuth(
         TEST_USER.admin.email,
         TEST_USER.admin.password
       );
@@ -22,8 +21,7 @@ describe("Auth API", () => {
     });
 
     it("should login success after valid credential BOB", async () => {
-      const response = await loginRequest(
-        agent,
+      const response = await loginRequestAuth(
         TEST_USER.user1.email,
         TEST_USER.user1.password
       );
@@ -33,8 +31,7 @@ describe("Auth API", () => {
     });
 
     it("should return 401 with invalid credentials", async () => {
-      const response = await loginRequest(
-        agent,
+      const response = await loginRequestAuth(
         TEST_USER.admin.email,
         "fakePassword123"
       );
@@ -43,8 +40,7 @@ describe("Auth API", () => {
     });
 
     it("should return 401 with invalid credentials", async () => {
-      const response = await loginRequest(
-        agent,
+      const response = await loginRequestAuth(
         TEST_USER.user1.email,
         "anotherFakePassword"
       );
