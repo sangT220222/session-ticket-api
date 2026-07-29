@@ -4,7 +4,7 @@ on:
     branches:
       - main #push - action will trigger if someone pushes to the main branch
       - feature/github-actions-finalisation
-      - chore/code-tidy-up
+      - chore/code-tidy
 
 #jobs block specifies the jobs to be executed by this workflow
 jobs:
