@@ -1,6 +1,6 @@
 components:
   schemas:
-    GetTickets:
+    Ticket:
       type: object
       properties:
         id:

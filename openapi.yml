@@ -16,6 +16,76 @@ paths:
           description: Tickets retrieved successfully
           content: application/json:
             type: array
-            items: $ref: "openapi_components/GetTickets"
+            items: $ref: "openapi_components/Ticket"
             pagination: $ref: "openapi_components/Pagination"
+
+  /api/tickets/{id}:
+    get:
+      summary: Return a ticket specified in the route parameter
+      responses:
+        "200":
+         description: A ticket retrieved successfully
+          content: application/json:
+            type: array
+            items: $ref: "openapi_components/Ticket"
+
+  /api/create:
+    post:
+      summary: If ticket's content passes requirements, creates and store a new ticket successfully
+      responses:
+        "201":
+          description: A ticket created successfully
+          content: application/json:
+            type: array
+              items: $ref: "openapi_components/Ticket"
+
+  /api/update/{id}:
+    patch:
+      summary: Update a ticket specified in the route parameter
+      responses:
+        "200":
+          description: A ticket updated successfully
+          content: application/json:
+            type: array
+              items: $ref: "openapi_components/Ticket"
+
+  /auth/login:
+    post:
+     summary: Logins and create a session specific for user
+      responses:
+        "200":
+          description: A ticket updated successfully
+          content: application/json:
+            type: object
+            required:
+                - success
+                - message
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Login successful
+
+
+  /auth/register:
+    post:
+     summary: Register a new user if credentials provided meet requirements
+      responses:
+        "201":
+          description: A ticket updated successfully
+          content: application/json:
+            type: object
+            required:
+                - success
+                - message
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: User created
+
 
