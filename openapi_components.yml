@@ -1,0 +1,41 @@
+components:
+  schemas:
+    GetTickets:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        status:
+          type:
+            - string
+            - "null"
+          enum: [todo, in_progress, done, null]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdByID:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalTickets:
+          type: integer
+        totalPages:
+          type: integer
