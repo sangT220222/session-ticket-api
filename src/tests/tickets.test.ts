@@ -254,23 +254,21 @@ describe("Updating a ticket - different scenarios", () => {
     expect(result.status).toBe(400);
   });
 
-  //ticket not found
-  // it("Should return error - ticket does not exist"),
-  //   async () => {
-  //     const agent = request.agent(app);
-  //     await agent
-  //       .post("/auth/login") //normal user login credential - 2 tickets done
-  //       .send({
-  //         email: "twoTickets@gmail.com",
-  //         password: "testing2ticketsAccount",
-  //       });
-  //     const result = await agent
-  //       .patch("/api/update/cmq6u7x6c0002esbrmi63tf44")
-  //       .send({
-  //         priority: "high",
-  //       });
-  //     expect(result.status).toBe(404);
-  //   };
+  it("Error - no ticket found", async () => {
+    await loginRequestTicket(
+      agent,
+      TEST_USER.admin.email,
+      TEST_USER.admin.password
+    );
+    const result = await agent
+      .patch("/api/update/cmrxhe99200013b6prrbd7sad")
+      .send({
+        priority: "high",
+      });
+    console.log(result.body);
+    expect(result.status).toBe(404);
+    expect(result.body.success).toBe(false);
+  });
 
   // code below has been commented out as this worked, running it again will cause a test fail
 
