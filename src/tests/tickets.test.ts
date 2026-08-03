@@ -63,6 +63,17 @@ describe("Getting single ticket", () => {
       TEST_USER.user1.email,
       TEST_USER.user1.password
     );
+    const result = await agent.get("/api/tickets/1122333");
+    // console.log(singleTicket.body.data.length());
+    expect(result.status).toBe(404);
+    expect(result.body.success).toBe(false);
+  });
+  it("Getting user's single ticket", async () => {
+    await loginRequestTicket(
+      agent,
+      TEST_USER.user1.email,
+      TEST_USER.user1.password
+    );
     const singleTicket = await agent.get(getQuery2);
     // console.log(singleTicket.body.data.length());
     expect(singleTicket.body).toBeDefined();
