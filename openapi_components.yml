@@ -1,0 +1,91 @@
+components:
+  schemas:
+    error400:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+          example: Validation failed
+
+        error:
+          type: object
+          required:
+            - formErrors
+            - fieldErrors
+          properties:
+            formErrors:
+              type: array
+              items:
+                type: string
+              example:
+                - At least one field must be present
+
+            fieldErrors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+              example: {}
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        status:
+          type:
+            - string
+            - "null"
+          enum: [todo, in_progress, done, null]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdByID:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalTickets:
+          type: integer
+        totalPages:
+          type: integer
+    ValidationErrorResponse:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+          example: Validation failed
+
+        error:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            priority:
+              - Invalid option: expected one of "low"|"medium"|"high"|"urgent"
