@@ -20,6 +20,7 @@ const getQuery = "/api/tickets/" + TEST_TICKETS.ticket1.id;
 const getQuery2 = "/api/tickets/" + TEST_TICKETS.ticket2.id;
 const updateQueryTicket3 = "/api/update/" + TEST_TICKETS.ticket3.id;
 const updateQueryTicket2 = "/api/update/" + TEST_TICKETS.ticket2.id;
+const agent = request.agent(app);
 
 it("unathenticated user blocked", async () => {
   const response = await request(app).get("/api/tickets");
@@ -30,7 +31,6 @@ it("unathenticated user blocked", async () => {
 
 describe("Getting normal users' respective tickets", () => {
   it("normal user only seeing their tickets", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -42,7 +42,6 @@ describe("Getting normal users' respective tickets", () => {
   });
 
   it("admin seeing all tickets", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.admin.email,
@@ -59,7 +58,6 @@ describe("Getting normal users' respective tickets", () => {
 //test for getting a single ticket
 describe("Getting single ticket", () => {
   it("Getting user's single ticket", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -71,7 +69,6 @@ describe("Getting single ticket", () => {
     expect(singleTicket.body.success).toBe(true);
   });
   it("invalid as ticket doesn't belong to user, and user not admin", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -86,7 +83,6 @@ describe("Getting single ticket", () => {
 //test for creating ticket - faker would be needed
 describe("Creating a ticket", () => {
   it("ticket to be created successfully", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -115,7 +111,6 @@ describe("Creating a ticket", () => {
   // //  expect(result.body.success).toBe(true);
   // // });
   it("should reject as priority was not provided", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -126,7 +121,6 @@ describe("Creating a ticket", () => {
   });
 
   it("should reject as title was not provided", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -137,7 +131,6 @@ describe("Creating a ticket", () => {
   });
 
   it("should reject as title is only spaces", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.admin.email,
@@ -164,7 +157,6 @@ describe("Creating a ticket", () => {
   //   });
 
   it("should reject as priority not in defined enum list", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.admin.email,
@@ -175,7 +167,6 @@ describe("Creating a ticket", () => {
   });
 
   it("should reject as field provided isn't valid", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.admin.email,
@@ -191,7 +182,6 @@ describe("Updating a ticket - different scenarios", () => {
   // code below has been commented out as this worked, running it again will cause a test fail
 
   it("Should successfully update a ticket - ticket belongs to user", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -204,7 +194,6 @@ describe("Updating a ticket - different scenarios", () => {
     expect(result.body.success).toBe(true);
   });
   it("Should return error - value to update is not in enum", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -217,7 +206,6 @@ describe("Updating a ticket - different scenarios", () => {
     expect(result.status).toBe(400);
   });
   it("Should return error - field provided is false", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.user1.email,
@@ -231,31 +219,29 @@ describe("Updating a ticket - different scenarios", () => {
   });
 
   //updating someone else's ticket
-  it("Should return error - not user's ticket"),
-    async () => {
-      const agent = request.agent(app);
-      await loginRequestTicket(
-        agent,
-        TEST_USER.user1.email,
-        TEST_USER.user1.password
-      );
-      const response = await agent.patch(updateQueryTicket3);
-      expect(response.status).toBe(403);
-    };
+  it("Should return error - not user's ticket", async () => {
+    await loginRequestTicket(
+      agent,
+      TEST_USER.user1.email,
+      TEST_USER.user1.password
+    );
+    const response = await agent.patch(updateQueryTicket3).send({
+      title: "Change it",
+    });
+    expect(response.status).toBe(403);
+  });
   //test for invalid priority status transtion
-  it("Should return error - not invalid status transition"),
-    async () => {
-      const agent = request.agent(app);
-      await loginRequestTicket(
-        agent,
-        TEST_USER.admin.email,
-        TEST_USER.admin.password
-      );
-      const result = await agent.patch(updateQueryTicket2).send({
-        priority: "high",
-      });
-      expect(result.status).toBe(400);
-    };
+  it("Should return error - invalid status transition", async () => {
+    await loginRequestTicket(
+      agent,
+      TEST_USER.admin.email,
+      TEST_USER.admin.password
+    );
+    const result = await agent.patch(updateQueryTicket2).send({
+      priority: "odyssey",
+    });
+    expect(result.status).toBe(400);
+  });
 
   //ticket not found
   // it("Should return error - ticket does not exist"),
@@ -279,7 +265,6 @@ describe("Updating a ticket - different scenarios", () => {
 
   // admin can update this ticket
   it("Success - admin can update any tickets", async () => {
-    const agent = request.agent(app);
     await loginRequestTicket(
       agent,
       TEST_USER.admin.email,
