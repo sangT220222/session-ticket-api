@@ -2,90 +2,354 @@ openapi: 3.1.0
 info:
   title: Session Ticket API
   version: 1.0.0
-  description:
+  description: >
+    A REST API for creating, retrieving and updating tickets.
+    It uses session-based authentication and role-based authorisation.
 
 servers:
   - url: http://localhost:3001
+    description: Local development server
 
 paths:
   /api/tickets:
     get:
-      summary: Return a list of tickets that you own. If you have an Admin role, this returns a list of all tickets
+      summary: Get tickets accessible to the authenticated user
+      description: >
+        Returns tickets owned by the authenticated user.
+        Users with the Admin role can retrieve all tickets.
       responses:
         "200":
           description: Tickets retrieved successfully
-          content: application/json:
-            type: array
-            items: $ref: "openapi_components/Ticket"
-            pagination: $ref: "openapi_components/Pagination"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    required:
+                      - data
+                      - pagination
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+                      pagination:
+                        $ref: "./openapi_components.yaml#/components/schemas/Pagination"
+        "401":
+          description: The user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
 
   /api/tickets/{id}:
     get:
-      summary: Return a ticket specified in the route parameter
+      summary: Get a single ticket
+      description: >
+        Returns the ticket identified by the route parameter if the
+        authenticated user is authorised to access it.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the ticket
+          schema:
+            type: string
       responses:
         "200":
-         description: A ticket retrieved successfully
-          content: application/json:
-            type: array
-            items: $ref: "openapi_components/Ticket"
+          description: Ticket retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+        "401":
+          description: The user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+        "403":
+          description: The authenticated user is not authorised to access this ticket
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Unauthorised access
+        "404":
+          description: The specified ticket was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Ticket not found
 
   /api/create:
     post:
-      summary: If ticket's content passes requirements, creates and store a new ticket successfully
+      summary: Create a ticket
+      description: >
+        Creates and stores a new ticket when the submitted fields
+        pass validation.
       responses:
         "201":
-          description: A ticket created successfully
-          content: application/json:
-            type: array
-              items: $ref: "openapi_components/Ticket"
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+        "400":
+          description: The submitted ticket data failed validation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - error
+                properties:
+                  message:
+                    type: string
+                    example: Validation failed
+                  error:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                    example:
+                      priority:
+                        - 'Invalid option: expected one of "low"|"medium"|"high"|"urgent"'
+        "401":
+          description: The user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
 
   /api/update/{id}:
     patch:
-      summary: Update a ticket specified in the route parameter
+      summary: Update a ticket
+      description: >
+        Updates the ticket identified by the route parameter.
+        A standard user can only update their own tickets, while an
+        administrator can update any ticket.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the ticket
+          schema:
+            type: string
       responses:
         "200":
-          description: A ticket updated successfully
-          content: application/json:
-            type: array
-              items: $ref: "openapi_components/Ticket"
+          description: Ticket updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+        "400":
+          description: The update failed validation or contains an invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/ValidationError"
+        "401":
+          description: The user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+        "403":
+          description: The authenticated user is not authorised to update this ticket
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Forbidden - only the user who created this ticket can update it
+        "404":
+          description: The specified ticket was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Ticket not found
 
   /auth/login:
     post:
-     summary: Logins and create a session specific for user
+      summary: Log in a user
+      description: >
+        Authenticates the supplied credentials and creates a session
+        for the user.
       responses:
         "200":
-          description: A ticket updated successfully
-          content: application/json:
-            type: object
-            required:
-                - success
-                - message
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
-                  type: string
-                  example: Login successful
-
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful
+        "400":
+          description: The submitted login data failed validation
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi_components.yaml#/components/schemas/ValidationError"
+        "401":
+          description: Authentication failed because the credentials were invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Authentication failed
 
   /auth/register:
     post:
-     summary: Register a new user if credentials provided meet requirements
+      summary: Register a new user
+      description: >
+        Creates a new user account when the submitted credentials
+        meet the registration requirements.
       responses:
         "201":
-          description: A ticket updated successfully
-          content: application/json:
-            type: object
-            required:
-                - success
-                - message
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
-                  type: string
-                  example: User created
-
-
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User created
+        "400":
+          description: The submitted registration data failed validation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - error
+                properties:
+                  message:
+                    type: string
+                    example: Validation failed
+                  error:
+                    type: object
+                    required:
+                      - confirmPassword
+                    properties:
+                      confirmPassword:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - Password doesn't match
+        "409":
+          description: An account already exists for the supplied email address
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Email exists in the system

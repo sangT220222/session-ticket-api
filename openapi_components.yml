@@ -1,5 +1,36 @@
 components:
   schemas:
+    error400:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+          example: Validation failed
+
+        error:
+          type: object
+          required:
+            - formErrors
+            - fieldErrors
+          properties:
+            formErrors:
+              type: array
+              items:
+                type: string
+              example:
+                - At least one field must be present
+
+            fieldErrors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+              example: {}
+
     Ticket:
       type: object
       properties:
@@ -39,3 +70,22 @@ components:
           type: integer
         totalPages:
           type: integer
+    ValidationErrorResponse:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+          example: Validation failed
+
+        error:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            priority:
+              - Invalid option: expected one of "low"|"medium"|"high"|"urgent"
