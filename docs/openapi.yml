@@ -10,6 +10,80 @@ servers:
   - url: http://localhost:3001
     description: Local development server
 
+components:
+  schemas:
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        status:
+          type:
+            - string
+            - "null"
+          enum: [todo, in_progress, done, null]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdByID:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalTickets:
+          type: integer
+        totalPages:
+          type: integer
+
+    ValidationError:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+          example: Validation failed
+
+        error:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            priority:
+              - Invalid option: expected one of "low"|"medium"|"high"|"urgent"
+
+    AuthenticationError:
+      type: object
+      required:
+        - fail
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Authentication failed
+
 paths:
   /api/tickets:
     get:
@@ -40,15 +114,15 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+                          $ref: "#/components/schemas/Ticket"
                       pagination:
-                        $ref: "./openapi_components.yaml#/components/schemas/Pagination"
+                        $ref: "#/components/schemas/Pagination"
         "401":
           description: The user is not authenticated
           content:
             application/json:
               schema:
-                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+                $ref: "#/components/schemas/AuthenticationError"
 
   /api/tickets/{id}:
     get:
@@ -78,13 +152,13 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+                    $ref: "#/components/schemas/Ticket"
         "401":
           description: The user is not authenticated
           content:
             application/json:
               schema:
-                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+                $ref: "#/components/schemas/AuthenticationError"
         "403":
           description: The authenticated user is not authorised to access this ticket
           content:
@@ -139,7 +213,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+                    $ref: "#/components/schemas/Ticket"
         "400":
           description: The submitted ticket data failed validation
           content:
@@ -162,12 +236,12 @@ paths:
                     example:
                       priority:
                         - 'Invalid option: expected one of "low"|"medium"|"high"|"urgent"'
-        "401":
-          description: The user is not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+          "401":
+            description: The user is not authenticated
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/AuthenticationError"
 
   /api/update/{id}:
     patch:
@@ -198,19 +272,46 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: "./openapi_components.yaml#/components/schemas/Ticket"
+                    $ref: "#/components/schemas/Ticket"
         "400":
           description: The update failed validation or contains an invalid status transition
+
           content:
             application/json:
               schema:
-                $ref: "./openapi_components.yaml#/components/schemas/ValidationError"
+                type: object
+                required:
+                  - message
+                  - error
+                properties:
+                  message:
+                    type: string
+                    example: Validation failed
+                  error:
+                    type: object
+                    required:
+                      - formErrors
+                      - fieldErrors
+                    properties:
+                      formErrors:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - At least one field must be present
+                      fieldErrors:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                        example: {}
         "401":
           description: The user is not authenticated
           content:
             application/json:
               schema:
-                $ref: "./openapi_components.yaml#/components/schemas/AuthenticationError"
+                $ref: "#/components/schemas/AuthenticationError"
         "403":
           description: The authenticated user is not authorised to update this ticket
           content:
@@ -272,7 +373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./openapi_components.yaml#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/ValidationError"
         "401":
           description: Authentication failed because the credentials were invalid
           content:

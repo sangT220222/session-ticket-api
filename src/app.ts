@@ -4,6 +4,7 @@ import { queryRouter } from "./routes/routes_logic.js";
 import { authRouter } from "./routes/auth_routes.js";
 import { sessionMiddleware } from "./authentication/session.js";
 import helmet from "helmet";
+import { swaggerUi, swaggerDocument } from "../docs/swagger.js";
 
 export const app = express();
 
@@ -52,5 +53,7 @@ app.use(
 app.get("/", (req, res) => {
   res.json({ message: "API running" });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 export default app;
